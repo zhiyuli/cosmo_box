@@ -4,17 +4,18 @@ import datetime
 
 from boxsdk import OAuth2, Client
 
+from settings import *
+
 
 def get_box_client():
-
     def list_folder(folder):
         for item in folder.get_items():
             print(item.name, item.id)
 
     auth = OAuth2(
-        client_id='',
-        client_secret='',
-        access_token='',
+        client_id=client_id,
+        client_secret=client_secret,
+        access_token=access_token,
     )
     client = Client(auth)
     user = client.user().get()
@@ -29,7 +30,7 @@ def save_box_filenames_to_csv(box_client, box_folder_id, csv_fn):
     def write_csv(folder, fn="out.csv"):
 
         fn_list = []
-        with open(fn, mode='w') as f:
+        with open(fn, mode='w', newline='') as f:
             w = csv.writer(f, delimiter=',')
             w.writerow(['filename', 'id'])
             counter = 0
@@ -112,7 +113,7 @@ def check_missings(model_start_year,
         cur_model_run_dt += datetime.timedelta(hours=12)
 
     if out_csv is not None:
-        with open(out_csv, mode='w') as f:
+        with open(out_csv, mode='w', newline='') as f:
             w = csv.writer(f, delimiter=',')
             counter = 0
             for item in missing_list_total:
@@ -136,9 +137,10 @@ def upload2box(box_client, folder_id, files):
         fn = os.path.basename(f_source)
 
         try:
+            print("Uploading {}".format(fn))
             file_object = box_client.folder(folder_id).upload(f_source, fn)
         except Exception as ex:
-            print(ex)
+            print("Failed {}: {}".format(fn, ex.message))
             failed.append(f_source)
     return failed, local_missings
 
@@ -147,21 +149,11 @@ if __name__ == "__main__":
 
     box_client = get_box_client()
     existings_csv_fn = "box_list.csv"
-    box_folder_id = 0
 
     ## export existing filenames on Box to csv
-    # save_box_filenames_to_csv(box_client, box_folder_id, existings_csv_fn)
+    #save_box_filenames_to_csv(box_client, box_folder_id, existings_csv_fn)
 
     # check missings
-    model_start_year = 2018
-    model_start_month = 11
-    model_start_day = 20
-    model_start_hour = 12
-
-    model_end_year = 2019
-    model_end_month = 4
-    model_end_day = 12
-    model_end_hour = 0
     missing_csv = "missings_list.csv"
 
     missings=check_missings(model_start_year,
@@ -175,7 +167,7 @@ if __name__ == "__main__":
                     existings_csv_fn,
                     out_csv=missing_csv)
 
-    local_storage_base = "/home/hydro/Desktop"
+    local_storage_base = "Y:\\cosmo"
 
     missings = [os.path.join(local_storage_base, fn) for fn in missings]
 
