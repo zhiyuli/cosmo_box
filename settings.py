@@ -1,9 +1,11 @@
 
-client_id=''
-client_secret=''
-access_token=''
+# Box OAuth
+client_id = ''
+client_secret = ''
 
-box_folder_id = 71568143416
+developer_token = ''
+
+box_folder_id = 0
 
 model_start_year = 2018
 model_start_month = 11

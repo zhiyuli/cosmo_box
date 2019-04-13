@@ -12,12 +12,27 @@ def get_box_client():
         for item in folder.get_items():
             print(item.name, item.id)
 
-    auth = OAuth2(
+    ## USE developer Token
+    # auth = OAuth2(
+    #     client_id=client_id,
+    #     client_secret=client_secret,
+    #     access_token=developer_token,
+    # )
+    #client = Client(auth)
+
+    ## OAuth Login
+    oauth = OAuth2(
         client_id=client_id,
         client_secret=client_secret,
-        access_token=access_token,
     )
-    client = Client(auth)
+    auth_url, csrf_token = oauth.get_authorization_url('http://localhost/')
+    print("Open following url in browser to login Box")
+    print("Copy and Paste Auth Code here, Press ENTER")
+    print("{}".format(auth_url)) #http://localhost/?state=box_csrf_token_rbXM8snSTAgQQ8Kq&code=uK3QzvNIE5mA8iWSlxYyc9sYzMOX93vI
+    auth_code = input("Auth Code:\n")
+    access_token, refresh_token = oauth.authenticate(auth_code)
+    client = Client(oauth)
+
     user = client.user().get()
     print('The current user ID is {0}'.format(user.id))
     root = client.root_folder()
@@ -151,7 +166,7 @@ if __name__ == "__main__":
     existings_csv_fn = "box_list.csv"
 
     ## export existing filenames on Box to csv
-    #save_box_filenames_to_csv(box_client, box_folder_id, existings_csv_fn)
+    save_box_filenames_to_csv(box_client, box_folder_id, existings_csv_fn)
 
     # check missings
     missing_csv = "missings_list.csv"
