@@ -146,18 +146,24 @@ def upload2box(box_client, folder_id, files):
     failed = []
 
     for f_source in files:
-        if not os.path.isfile(f_source):
-            local_missings.append(f_source)
-            continue
         fn = os.path.basename(f_source)
+        if not os.path.isfile(f_source):
+            local_missings.append(fn)
+            continue
 
         try:
             print("Uploading {}".format(fn))
             file_object = box_client.folder(folder_id).upload(f_source, fn)
         except Exception as ex:
             print("Failed {}: {}".format(fn, ex.message))
-            failed.append(f_source)
+            failed.append(fn)
     return failed, local_missings
+
+
+def list2file(fn, list_obj):
+    with open(fn, 'w') as f:
+        for item in list_obj:
+            f.write("%s\n" % item)
 
 
 if __name__ == "__main__":
@@ -169,7 +175,7 @@ if __name__ == "__main__":
     save_box_filenames_to_csv(box_client, box_folder_id, existings_csv_fn)
 
     # check missings
-    missing_csv = "missings_list.csv"
+    missing_csv = "box_missings.csv"
 
     missings=check_missings(model_start_year,
                     model_start_month,
@@ -188,4 +194,7 @@ if __name__ == "__main__":
 
     failed, local_missings = upload2box(box_client, box_folder_id, missings)
     print(failed)
+    list2file("./failed_uploading.txt", failed)
     print(local_missings)
+    list2file("./local_missing.txt", local_missings)
+    print("done")
